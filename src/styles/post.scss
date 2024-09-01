@@ -1,0 +1,209 @@
+.postContainer {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+    width: 90vw;
+
+    margin: 0 auto;
+
+    .post {
+        display: flex;
+        flex-direction: column;
+        gap: 4rem;
+
+        .postHeader {
+            margin-top: 2rem;
+
+            display: flex;
+            align-items: center;
+
+            width: 90vw;
+
+            justify-content: space-around;
+
+            .userInfo {
+                display: flex;
+                align-items: center;
+
+                gap: 2rem;
+    
+                img {
+                    width: 8rem;
+                    height: 8rem;
+                    border-radius: 50%;
+                }
+    
+                p {
+                    font-weight: bold;
+                }
+            }
+        }
+
+        .content {
+            width: 60vw;
+            margin: 0 auto;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+
+            button {
+                color: var(--white);
+                background-color: var(--orange-5);
+    
+                border: 0;
+                border-radius: 2rem;
+    
+                padding: 1rem;
+    
+                transition: 0.25s;
+    
+                &:hover {
+                    filter: brightness(0.9);
+                }
+            }
+
+            .icons {
+                display: flex;
+                gap: .5rem;
+
+                svg {
+                    cursor: pointer;
+                }
+
+                .likeContainer {
+                    display: flex;
+                    align-items: center;
+    
+                    span {
+                        margin-left: 5px;
+                        font-size: .75rem;
+                        color: red
+                    }
+                }
+            }
+        }
+
+        .postComments {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+
+            width: 60vw;
+            margin: 0 auto;
+
+            .comment {
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+                padding: 1rem;
+
+                border-top: 1px solid var(--orange-5);
+
+                .commentHeader {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    .commentUserInfo {
+                        display: flex;
+                        align-items: center;
+                        gap: 1rem;
+    
+                        img {
+                            width: 4rem;
+                            height: 4rem;
+                            border-radius: 50%;
+                        }
+                    }
+                }
+
+                .commentContent {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    div {
+                        display: flex;
+                        gap: 0.5rem;
+
+                        svg {
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.modalContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    .modalContent {
+        width: 100%; /* You can adjust this value to your liking */
+        max-width: 40rem; /* Maximum width for the modal */
+        background-color: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        position: relative;
+        
+        .title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        
+        .closeButton {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--orange-5);
+            width: 1.5rem;
+            height: 1.5rem;
+        
+            transition: 0.25s;
+        
+            &:hover {
+                filter: brightness(0.8);
+            }
+        }
+
+        .textInput {
+            width: 100%;
+            height: 200px; /* You can adjust this value to your liking */
+            margin: 20px auto; /* Centering textarea */
+            resize: none; /* Disable resizing */
+            
+            border: 1px solid var(--orange-2);
+        
+            &:focus {
+                outline: 1px solid var(--orange-3);
+            }
+        }
+        
+        .postButton {
+            width: 100%;
+            background-color: var(--orange-5);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    }
+}

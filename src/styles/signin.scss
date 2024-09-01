@@ -1,0 +1,104 @@
+.signInSuperContainer {
+    .backArrow {
+        cursor: pointer;
+
+        height: 2rem;
+        width: 2rem;
+
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+
+        &:hover {
+            filter: brightness(0.9);
+        }
+    }
+}
+
+.signInContainer {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+
+    gap: 1rem;
+
+    .iconContainer {
+        width: 3rem;
+        height: 3rem;
+
+        background-color: var(--orange-5);
+        border-radius: 50%;
+        
+        padding: 1rem;
+    }
+
+    .signInTitle {
+        font-size: 1.5rem;
+    }
+
+    .formContainer {
+        display: flex;
+        flex-direction: column;
+
+        gap: 1rem;
+        margin-top: 2rem;
+
+        input {
+            line-height: 1.5rem;
+            font-size: 1rem;
+
+            border-radius: 0.5rem;
+
+            border: 1px solid #dad7cd;
+
+            padding: 1rem;
+
+            width: 34rem;
+
+            &:focus {
+                outline: none;
+                border: 0.1rem solid var(--orange-5);
+            }
+        }
+    }
+
+    button {
+        margin-top: 2rem;
+
+        border: 0;
+        border-radius: 0.5rem;
+
+        padding: 1rem;
+
+        width: 34rem;
+
+        color: #ffffff;
+        background-color: var(--orange-5);
+
+        &:hover {
+            filter: brightness(0.9);
+        }
+    }
+
+    .signInLink {
+        text-decoration: none;
+        color: #29292e;
+
+        cursor: default;
+
+        span {
+            color: var(--orange-5);
+            text-decoration: underline;
+
+            cursor: pointer;
+
+            &:hover {
+                filter: brightness(0.8);
+            }
+        }
+    }
+}
