@@ -10,6 +10,8 @@ import { FaUserLock } from "react-icons/fa";
 
 import '../styles/signup.scss'
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export function SignUp() {
     const [firstName, setFirstName] = useState('')
     const [lastName, setLastName] = useState('')
@@ -27,15 +29,14 @@ export function SignUp() {
         const toastId = toast.loading('Loading')
 
         if(password === confirmPassword && password !== '') {
-            axios.post('http://localhost:8000/signup', {
+            axios.post(`${BACKEND_URL}/users`, {
                 firstName,
                 lastName,
                 email,
                 password,
                 cpf,
                 phone
-            }).then(response => {
-                console.log(response)
+            }).then(() => {
                 toast.success('User created', {
                     id: toastId
                 })
@@ -44,8 +45,7 @@ export function SignUp() {
                     navigate('/login')
                 }, 2000)
             }).catch(error => {
-                console.log(error)
-                toast.error(`Error: ${error}`, {
+                toast.error(`Error: ${error.response.data.message}`, {
                     id: toastId
                 })
             })

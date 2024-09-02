@@ -1,12 +1,13 @@
 import { createContext, useState, useEffect } from 'react'
 
 import axios from 'axios'
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null)
-    const [token, setToken] = useState('')
-    const [error, setError] = useState('')
 
     const[loading, setLoading] = useState(true)
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
                 const userId = localStorage.getItem('userId')
 
                 if(userId) {
-                    const response = await axios.get(`http://localhost:8000/user?id=${userId}`)
+                    const response = await axios.get(`${BACKEND_URL}/users/${userId}`)
 
                     setUser(response.data.user)
                 } else {
@@ -30,51 +31,30 @@ export const AuthProvider = ({ children }) => {
         }
 
         fetchUser()
-    }, [user])
+    }, [])
 
     const signIn = async (email, password) =>  {
         try {
-            const response = await axios.post('http://localhost:8000/login', { email, password })
+            const response = await axios.post(`${BACKEND_URL}/login`, { email, password })
 
-            const { token, user } = response.data
+            const { message, user } = response.data
 
-            localStorage.setItem('token', token)
             localStorage.setItem('userId', user.id)
-
-            setToken(token)
             setUser(user)
 
-            console.log(user)
-            console.log('Signed in')
-            return response.data.Status
+            return message
         } catch (error) {
-            return error.response.data.error
+            return error.response.data.message
         }
     }
 
     const signOut = () => {
         localStorage.removeItem('userId')
-        localStorage.removeItem('token')
         setUser(null)
     }
 
-    const deleteUser = async (userId) => {
-        try {
-            await axios.post(`http://localhost:8000/user/${userId}`)
-
-            if(userId == localStorage.getItem('userId')) {
-                signOut()
-            }
-
-            console.log('User deleted')
-        } catch (error) {
-            setError('Failed to delete user')
-            console.error('Error deleting user:', error)
-        }
-    }
-
     return (
-        <AuthContext.Provider value={{ user, signIn, signOut, loading, token, error, deleteUser }}>
+        <AuthContext.Provider value={{ user, signIn, signOut, loading }}>
             { children }
         </AuthContext.Provider>
     )

@@ -18,6 +18,9 @@ import { VscHeart } from "react-icons/vsc";
 import { FaHeart } from "react-icons/fa";
 
 import '../styles/post.scss'
+import toast, { Toaster } from "react-hot-toast"
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function PostPage() {
     const { id } = useParams()
@@ -38,6 +41,7 @@ export function PostPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isEditCommentModalOpen, setIsEditCommentModalOpen] = useState(false)
 
+    Modal.setAppElement('#root')
 
     function getTimeDifference(postDate) {
         const currentDate = new Date();
@@ -59,18 +63,19 @@ export function PostPage() {
     }
 
     function openModal() {
-        setIsModalOpen(true);
+        setIsModalOpen(true)
     }
     
     function closeModal() {
-        setIsModalOpen(false);
+        setIsModalOpen(false)
+        setCommentContent('')
     }
 
-    async function openEditModal(postId) {
-        const postReponse = await axios.get(`http://localhost:8000/posts/${id}`)
-        setEditPostContent(postReponse.data.post[0].postContent)
+    async function openEditModal() {
+        const postReponse = await axios.get(`${BACKEND_URL}/posts/${id}`)
+        setEditPostContent(postReponse.data.post.postContent)
 
-        setIsEditModalOpen(true);
+        setIsEditModalOpen(true)
     }
     
     function closeEditModal() {
@@ -78,8 +83,8 @@ export function PostPage() {
     }
 
     async function openEditCommentModal(commentId) {
-        const commentReponse = await axios.get(`http://localhost:8000/comment/${commentId}`)
-        setEditCommentContent(commentReponse.data.comment[0].commentContent)
+        const commentReponse = await axios.get(`${BACKEND_URL}/posts/comments/${commentId}`)
+        setEditCommentContent(commentReponse.data.comment.commentContent)
 
         setEditCommentId(commentId)
         setIsEditCommentModalOpen(true);
@@ -89,13 +94,15 @@ export function PostPage() {
         setIsEditCommentModalOpen(false);
     }
 
-    Modal.setAppElement('#root')
-
     function handleCreateComment() {
-        axios.post(`http://localhost:8000/comments/${id}/new`, {
+        if (!commentContent) {
+            toast.error('Comment content is required')
+            return
+        }
+
+        axios.post(`${BACKEND_URL}/posts/${id}/comments`, {
             userId,
-            commentContent,
-            createdAt: new Date()
+            commentContent
         }).then(response => {
             console.log(response)
         }).catch(error => {
@@ -105,61 +112,75 @@ export function PostPage() {
         closeModal()
     }
 
-    const handleLike = async (postId) => {
+    const handleLike = async () => {
         try {
-            const response = await axios.post(`http://localhost:8000/posts/${postId}/like/new`, {
+            await axios.post(`${BACKEND_URL}/posts/${id}/like`, {
                 userId: userId,
-            });
+            })
 
             setPost(prevPost => ({
                 ...prevPost,
                 isLiked: !prevPost.isLiked,
-            }));
-
+            }))
         } catch (error) {
             console.error('Failed to like post: ', error);
         }
-    };
+    }
 
-    const handleDeletePost = async (postId) => {
+    const handleDeletePost = async () => {
         try {
-            const response = await axios.post(`http://localhost:8000/posts/${id}/delete`, {
-                userId: userId,
-            });
-
-            console.log(response.data);
+            await axios.delete(`${BACKEND_URL}/posts/${id}`)
         } catch (error) {
             console.error('Failed to delete post: ', error);
         } finally {
             navigate('/posts')
         }
-    };
+    }
 
-    const handleEditPost = async (postId) => {
+    const handleEditPost = async () => {
+        if (!editPostContent) {
+            toast.error('Post content is required')
+            return
+        }
+
         try {
-            const response = await axios.post(`http://localhost:8000/posts/${id}/update`, {
-                postContent: editPostContent,
-                createdAt: new Date()
-            });
+            const postResponse = await axios.get(`${BACKEND_URL}/posts/${id}`)
+            const currentPostContent = postResponse.data.post.postContent
 
-            console.log(response.data);
+            if (editPostContent === currentPostContent) {
+                return
+            }
+
+            await axios.put(`${BACKEND_URL}/posts/${id}`, {
+                postContent: editPostContent,
+                createdAt: new Date().toISOString()
+            })
         } catch (error) {
-            console.error('Failed to delete post: ', error);
+            console.error('Failed to delete post: ', error)
         } finally {
             setEditPostContent('')
             setIsEditModalOpen(false)
-            setEditPostId('')
         }
     }
 
     const handleEditComment = async () => {
-        try {
-            const response = await axios.post(`http://localhost:8000/comment/${editCommentId}/update`, {
-                commentContent: editCommentContent,
-                createdAt: new Date()
-            });
+        if (!editCommentContent) {
+            toast.error('Comment content is required')
+            return
+        }
 
-            console.log(response.data);
+        try {
+            const commentResponse = await axios.get(`${BACKEND_URL}/posts/comments/${editCommentId}`)
+            const currentCommentContent = commentResponse.data.comment.commentContent
+
+            if (editCommentContent === currentCommentContent) {
+                return
+            }
+
+            await axios.put(`${BACKEND_URL}/posts/comments/${editCommentId}`, {
+                commentContent: editCommentContent,
+                createdAt: new Date().toISOString()
+            })
         } catch (error) {
             console.error('Failed to edit comment: ', error);
         } finally {
@@ -171,11 +192,7 @@ export function PostPage() {
 
     const handleDeleteComment = async (commentId) => {
         try {
-            const response = await axios.post(`http://localhost:8000/comment/${commentId}/delete`);
-
-            if (response.status === 200) {
-                window.location.reload();
-            }
+            await axios.delete(`${BACKEND_URL}/posts/comments/${commentId}`);
         } catch (error) {
             console.error('Failed to delete comment: ', error);
         }
@@ -184,42 +201,44 @@ export function PostPage() {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const postResponse = await axios.get(`http://localhost:8000/posts/${id}`);
-                const post = postResponse.data.post[0];
-    
-                const userResponse = await axios.get(`http://localhost:8000/user?id=${post.userId}`);
-                const user = userResponse.data.user;
+                const postResponse = await axios.get(`${BACKEND_URL}/posts/${id}`)
+                const post = postResponse.data.post
 
-                const isLikedResponse = await axios.post(`http://localhost:8000/posts/${id}/liked`, { userId: userId });
-                const isLiked = isLikedResponse.data.isLiked;
+                const userResponse = await axios.get(`${BACKEND_URL}/users/${post.userId}`)
+                const user = userResponse.data.user
+
+                const isLikedResponse = await axios.post(`${BACKEND_URL}/posts/${id}/liked`, { 
+                    userId: userId 
+                })
+                const isLiked = isLikedResponse.data.isLiked
     
-                const postWithUserInfo = { ...post, user, isLiked };
+                const postWithUserInfo = { ...post, user, isLiked }
                 
                 setPost(postWithUserInfo);
             } catch (error) {
-                console.error('Failed to fetch post: ', error);
+                console.error('Failed to fetch post: ', error)
             } 
         }
 
         const fetchComments = async () => {
             try {
-                const commentsResponse = await axios.get(`http://localhost:8000/comments/${id}`);
+                const commentsResponse = await axios.get(`${BACKEND_URL}/posts/${id}/comments`)
                 const commentsWithUserInfo = await Promise.all(commentsResponse.data.comments.map(async comment => {
-                    const userResponse = await axios.get(`http://localhost:8000/user?id=${comment.userId}`)
-                    const user = userResponse.data.user;
+                    const userResponse = await axios.get(`${BACKEND_URL}/users/${comment.userId}`)
+                    const user = userResponse.data.user
 
                     return { ...comment, user }
                 }))
 
-                setComments(commentsWithUserInfo);
+                setComments(commentsWithUserInfo)
             } catch (error) {
-                console.error('Failed to fetch comments');
+                console.error('Failed to fetch comments')
             } 
         }
 
         fetchPost()
         fetchComments()
-    }, [post, comments])
+    }, [comments])
 
     if (!post.user) {
         return <Loader />
@@ -228,6 +247,7 @@ export function PostPage() {
     return (
         <div>
             <Header />
+            <Toaster/>
 
             <Modal 
                 isOpen={isModalOpen}
@@ -309,7 +329,7 @@ export function PostPage() {
                             <div className="comment" key={comment.id}>
                                 <div className="commentHeader">
                                     <div className="commentUserInfo">
-                                        <img src={comment.user.image ? `http://localhost:8000/images/${comment.user.image}` : defaultImg} alt="" />
+                                        <img src={defaultImg} alt="" />
                                         <p>{comment.user.firstName} {comment.user.lastName}</p>
                                     </div>
                                     <p>{getTimeDifference(comment.createdAt)}</p>

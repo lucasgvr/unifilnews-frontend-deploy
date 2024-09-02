@@ -26,21 +26,14 @@ export function SignIn() {
         try {
             const response = await signIn(email, password)
 
-            if(response === 'User not found') {
+            if(response === 'Invalid email or password') {
                 toast.error(response, {
                     id: 2,
                     duration: 1000
                 })
             }
 
-            if(response === 'Invalid Credentials') {
-                toast.error(response, {
-                    id: 3,
-                    duration: 1000
-                })
-            }
-
-            if(response === 'Signed') {
+            if(response === 'Login successful') {
                 navigate('/loading')
             }
         } catch (error) {

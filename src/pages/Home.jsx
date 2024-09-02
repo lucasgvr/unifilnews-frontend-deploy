@@ -1,36 +1,11 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
-
-import axios from 'axios'
-
-import { HiPencilAlt } from "react-icons/hi";
-import homeImg from '../assets/avatar.svg'
-import '../styles/home.scss'
-import { useAuth } from '../hooks/useAuth';
 import { Header } from '../components/Header';
 import { SubscribeButton } from '../components/SubscribeButton';
-import toast, { Toaster } from 'react-hot-toast'
 
+import homeImg from '../assets/avatar.svg'
+
+import '../styles/home.scss'
 
 export function Home() {
-    const [users, setUsers] = useState([])
-
-    useEffect(() => {
-        axios.get('http://localhost:8000')
-            .then(response => setUsers(response.data))
-            .catch(error => console.log(error))
-    }, [])
-
-    const { signOut, deleteUser } = useAuth()
-
-    function handleUpdate() {
-        // update function
-    }
-
-    function handleDelete(id) {
-        deleteUser(id)
-    }
-
     return (
         <>
             <Header />

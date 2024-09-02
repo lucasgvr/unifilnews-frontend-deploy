@@ -1,10 +1,7 @@
-import { Loader } from "../components/Loader";
 import { Header } from "../components/Header";
 
-import { useState, useEffect, useContext } from 'react';
-import { useAuth } from "../hooks/useAuth";
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from 'react-hot-toast'
 import axios from 'axios'
 
 import '../styles/posts.scss'
@@ -21,16 +18,14 @@ import { MdDelete } from "react-icons/md";
 import { BsPencilSquare } from "react-icons/bs";
 
 import PostLikes from "../components/PostsLikes";
+import toast, { Toaster } from "react-hot-toast";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export function Posts() {
-    const token = localStorage.getItem("token")
     const id = localStorage.getItem("userId")
 
     const [posts, setPosts] = useState([])
-
-    const { signOut } = useAuth()
-
-    const [validToken, setValidToken] = useState(true)
 
     const navigate = useNavigate()
 
@@ -41,17 +36,22 @@ export function Posts() {
     const [editPostContent, setEditPostContent] = useState('')
     const [editPostId, setEditPostId] = useState('')
 
+    Modal.setAppElement('#root')
+
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const postsResponse = await axios.get('http://localhost:8000/posts')
+                const postsResponse = await axios.get(`${BACKEND_URL}/posts`)
                 const postsWithUserInfo = await Promise.all(postsResponse.data.posts.map(async post => {
-                    const userResponse = await axios.get(`http://localhost:8000/user?id=${post.userId}`)
-                    const user = userResponse.data.user;
+                    const userResponse = await axios.get(`${BACKEND_URL}/users/${post.userId}`)
+                    const user = userResponse.data.user
 
-                    const isLikedResponse = await axios.post(`http://localhost:8000/posts/${post.id}/liked`, { userId: id });
-                    const isLiked = isLikedResponse.data.isLiked;
-
+                    const isLikedResponse = await axios.post(`${BACKEND_URL}/posts/${post.id}/liked`, {
+                        userId: id 
+                    })
+        
+                    const isLiked = isLikedResponse.data.isLiked
+        
                     return { ...post, user, isLiked }
                 }))
 
@@ -69,12 +69,13 @@ export function Posts() {
     }
     
     function closeModal() {
-        setIsModalOpen(false);
+        setIsModalOpen(false)
+        setPostContent('')
     }
 
     async function openEditModal(postId) {
-        const postReponse = await axios.get(`http://localhost:8000/posts/${postId}`)
-        setEditPostContent(postReponse.data.post[0].postContent)
+        const postReponse = await axios.get(`${BACKEND_URL}/posts/${postId}`)
+        setEditPostContent(postReponse.data.post.postContent)
         setEditPostId(postId)
 
         setIsEditModalOpen(true);
@@ -84,13 +85,15 @@ export function Posts() {
         setIsEditModalOpen(false);
     }
 
-    Modal.setAppElement('#root')
-
     function handleCreatePost() {
-        axios.post('http://localhost:8000/posts/new', {
-            id,
-            postContent,
-            createdAt: new Date()
+        if (!postContent) {
+            toast.error('Post content is required')
+            return
+        }
+
+        axios.post(`${BACKEND_URL}/posts`, {
+            userId: id,
+            postContent
         }).then(response => {
             console.log(response)
         }).catch(error => {
@@ -121,38 +124,44 @@ export function Posts() {
 
     const handleLike = async (postId) => {
         try {
-            const response = await axios.post(`http://localhost:8000/posts/${postId}/like/new`, {
+            const response = await axios.post(`${BACKEND_URL}/posts/${postId}/like`, {
                 userId: id,
-            });
+            })
 
             console.log(response.data);
         } catch (error) {
             console.error('Failed to like post: ', error);
         }
-    };
+    }
 
     const handleDeletePost = async (postId) => {
         try {
-            const response = await axios.post(`http://localhost:8000/posts/${postId}/delete`, {
-                userId: id,
-            });
-
-            console.log(response.data);
+            await axios.delete(`${BACKEND_URL}/posts/${postId}`)
         } catch (error) {
-            console.error('Failed to delete post: ', error);
+            console.error('Failed to delete post: ', error)
         }
-    };
+    }
 
     const handleEditPost = async (postId) => {
-        try {
-            const response = await axios.post(`http://localhost:8000/posts/${postId}/update`, {
-                postContent: editPostContent,
-                createdAt: new Date()
-            });
+        if (!editPostContent) {
+            toast.error('Post content is required')
+            return
+        }
 
-            console.log(response.data);
+        try {
+            const postResponse = await axios.get(`${BACKEND_URL}/posts/${postId}`)
+            const currentPostContent = postResponse.data.post.postContent
+
+            if (editPostContent === currentPostContent) {
+                return
+            }
+
+            await axios.put(`${BACKEND_URL}/posts/${postId}`, {
+                postContent: editPostContent,
+                createdAt: new Date().toISOString()
+            })
         } catch (error) {
-            console.error('Failed to delete post: ', error);
+            console.error('Failed to update post: ', error)
         } finally {
             setEditPostContent('')
             setIsEditModalOpen(false)
@@ -164,44 +173,10 @@ export function Posts() {
         navigate(`/post/${postId}`)
     }
     
-    useEffect(() => {
-        const validateToken = async () => {
-            await axios.post('http://localhost:8000/token', { 
-                token, 
-                id 
-            }).then(response => {
-                if(response.data == false) {
-                    console.log(response.data)
-                    setValidToken(false)
-                    toast.error('Session Expired', {
-                        id: 1
-                    })
-
-                    setTimeout(() => {
-                        navigate('/')
-                        navigate(0)
-                        signOut()
-                    }, 2000)
-                } else {
-                    setValidToken(true)
-                }
-            }).catch(error => {
-                console.log(error)
-            })
-        }
-
-        validateToken()
-    }, [validToken])
-
     return (
-        !validToken ?  
-        <div>
-            <Toaster />
-            <Loader />
-        </div>
-        :
         <div>
             <Header />
+            <Toaster />
 
             <Modal 
                 isOpen={isModalOpen}
@@ -248,7 +223,7 @@ export function Posts() {
                     <div className="post" key={post.id}>
                         <div className="postHeader">
                             <div className="userInfo">
-                                <img src={post.user.image ? `http://localhost:8000/images/${post.user.image}` : defaultImg} alt="" />
+                                <img src={defaultImg} alt="" />
                                 <p>{post.user.firstName} {post.user.lastName}</p>
                             </div>
 
