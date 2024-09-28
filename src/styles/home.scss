@@ -38,8 +38,20 @@
         font-weight: bold;
       }
     }
-  
-    button {
-      margin-top: 2.5rem;
+
+    .visitorContainer {
+        margin-top: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .visitorCount {
+            font-size: 1.2rem;
+            padding: 1.25rem;
+            border-radius: 2rem;
+            color: var(--orange-5);
+            border: 1px solid var(--orange-5);
+        }
     }
+  
   }

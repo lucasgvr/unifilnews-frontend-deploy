@@ -42,18 +42,20 @@ export function Home() {
             <Header />
             <main className='homeContainer'>
                 <section className='hero'>
-                <span>👋 Olá, seja bem-vindo</span>
-                <h1>Notícias sobre <br /> 
-                    o universo <span>Unifil</span>
-                </h1>
-                <p>
-                    Tenha acesso à todas as publicações<br />
-                    <span>entrevistas</span>, tutoriais, vídeos e dicas
-                </p>
-                <div>
-                    <SubscribeButton />
-                    {visitorCount}
-                </div>
+                    <span>👋 Olá, seja bem-vindo</span>
+                    <h1>Notícias sobre <br /> 
+                        o universo <span>Unifil</span>
+                    </h1>
+                    <p>
+                        Tenha acesso à todas as publicações<br />
+                        <span>entrevistas</span>, tutoriais, vídeos e dicas
+                    </p>
+                    <div className='visitorContainer'>
+                        <SubscribeButton />
+                        <div className='visitorCount'>
+                            {visitorCount} visitantes até o momento
+                        </div>
+                    </div>
                 </section>
 
                 <img src={homeImg} alt="Girl Coding" />
